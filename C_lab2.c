@@ -17,10 +17,14 @@
 - вычисление с проверкой и использованием всех элементов массива по заданному условию и 
 формуле (например, общая сумма на всех счетах) -  дается индивидуально.*/
 #include <stdio.h>
+#include <conio.h>
+#include <Windows.h>
 #include <locale.h>
 #include <malloc.h>
 #define TRUE 1
 #define FALSE 0
+#define ESC 27
+typedef struct student myType;					// синоним для типа "struct student"
 
 struct student
 {
@@ -33,37 +37,50 @@ struct student
 };
 
 int menu();
-struct student* createArray();
+myType* createArray();
+void enter();
+void show();
+void delete(myType);
+void edit(myType);
 
 int main()
 {
     setlocale(LC_ALL, "russian");
-    struct student single = {"Антонов", "Ю.В.",57,"Информатика",974,1};
+	myType single = {"Антонов", "Ю.В.",57,"Информатика",974,1};
     printf("Студент: %s %s", single.cp_name, single.cp_initials);
+	myType *structArray = createArray();
 
     while (menu()==TRUE);
+
+	free(structArray);
     return 0;
 }
 
-struct student* createArray()
+myType* createArray()
 {
     printf("Введите количество элементов массива: ");
-    int arrSize;
-    scanf("%d", &arrSize);
-    
-    struct student *Students;
-    Students = (struct student*)malloc(arrSize*sizeof(struct student));
+    int i_arrSize;
+    scanf_s("%d", &i_arrSize);
+	myType *Students;
+    Students = (myType*)malloc(i_arrSize*sizeof(myType));
     return Students;
 }
 
 int menu()
 {
     system("cls");
-    printf("\t1 - ввод данных");
-    printf("\t2 - вывод данных");
-    printf("\tESC - выход");
-    while (!_kbhit());
-    char choice;
+    printf("\t1 - ввод данных\n");
+    printf("\t2 - вывод данных\n");
+	printf("\t3 - изменение элемента\n");
+	printf("\t4 - удаление элемента\n");
+	printf("\t5 - очистка элемента\n");
+	printf("\t6 - найти свободный элемент\n");
+	printf("\t7 - \n");
+	printf("\t8 - \n");
+	printf("\t9 - \n");
+	printf("\tESC - выход\n");
+	char choice;
+	while (!_kbhit());
     choice = _getch();
     switch(choice)
     {
@@ -74,8 +91,23 @@ int menu()
         case ESC:
             return FALSE;
             break;
-        case default:
-            break;
     }
     return TRUE;
+}
+
+void enter()
+{
+}
+
+void show()
+{
+}
+
+void edit(myType someOne)
+{
+}
+
+void delete(myType someOne)
+{
+
 }
