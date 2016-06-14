@@ -16,6 +16,7 @@
 - изменение (редактирование) заданного элемента.
 - вычисление с проверкой и использованием всех элементов массива по заданному условию и 
 формуле (например, общая сумма на всех счетах) -  дается индивидуально.*/
+
 #include <stdio.h>
 #include <conio.h>
 #include <Windows.h>
@@ -24,7 +25,7 @@
 #define TRUE 1
 #define FALSE 0
 #define ESC 27
-typedef struct student myType;									// синоним для типа "struct student"
+typedef struct student myType;												// синоним для типа "struct student"
 
 struct student
 {
@@ -32,7 +33,7 @@ struct student
 	char *cp_department;
 	int i_recBook;
 	int i_group;
-	int i_isFull;								// 0 - пустой, 1 - содержит данные
+	int i_isFull;															// 0 - пустой, 1 - содержит данные
 };
 
 int menu();
@@ -43,23 +44,26 @@ void delete(int);
 void edit(int);
 void clean(int);
 int getClean();
-myType *structArray;											// глобальный массив структур
-int i_arrSize;													// и его размер
+void gotoxy(int, int);
+myType *structArray;														// глобальный массив структур
+int i_arrSize;																// и его размер
 
 int main()
 {
     setlocale(LC_ALL, "russian");
-	myType single = {"Антонов Ю.В.",57,"Информатика",974,1};
-    printf("Студент: %s %i", single.cp_name, single.i_group);
-	structArray = createArray();
+	myType single = {"Антонов Ю.В.","Информатика",57,974,1};
+    printf("Студент: %s %i\n", single.cp_name, single.i_group);
 
-    while (menu()==TRUE);
+	structArray = createArray();
+	structArray[0] = single;
+
+    while ( menu()==TRUE );
 
 	free(structArray);
     return 0;
 }
 
-myType* createArray()											// 
+myType* createArray()											// создание динамического массива структур
 {
     printf("Введите количество элементов массива: ");
     scanf_s("%d", &i_arrSize);
@@ -74,7 +78,7 @@ int menu()
     printf("\t1 - ввод данных\n");
     printf("\t2 - вывод данных\n");
 	printf("\t3 - изменение элемента\n");
-	printf("\t4 - удаление элемента\n");
+	printf("\t4 - удаление элемента из массива\n");
 	printf("\t5 - очистка элемента\n");
 	printf("\t6 - найти свободный элемент\n");
 	printf("\t7 - найти элемент с минимальным значением поля \"Группа\"\n");
@@ -114,8 +118,8 @@ int menu()
 			clean(number);
 			break;
 		case '6':
-			number = getClean();
-			if (number>=0)
+			number = getClean();											// функция вернёт номер пустого
+			if (number>=0)													// или -1, если такого нет
 			{
 				show(number);
 			}
@@ -123,18 +127,19 @@ int menu()
 			{
 				printf("\nПустых элементов нет!\n");
 			}
+			_getch();
 			break;
 		case '7':
-			getMinField();
+			//getMinField();
 			break;
 		case '8':
-			getFieldIs();
+			//getFieldIs();
             break;
 		case '9':
-			searchByCondition();
+			//searchByCondition();
 			break;
 		case '0':
-			sortByField();
+			//sortByField();
 			break;
         case ESC:
             return FALSE;
@@ -150,6 +155,11 @@ void enter(int number)
 
 void show(int number)
 {
+	gotoxy(10,15);
+	printf("Содержимое %d-го элемента массива: \n", number);
+	printf("|\tФамилия И.О.\t|Факультет\t|№ зачётки\t|№ группы\t|");
+	_getch();
+	return;
 }
 
 void edit(int number)
@@ -167,18 +177,18 @@ void clean(int number)
 
 int getClean()
 {
-	int number;
-	for(int i=0; i<i_arrSize; i++)
+	int i;
+	for(i=0; i<i_arrSize; i++)
 		if (!structArray[i].i_isFull)
 		{
-			return number;
+			return i;
 		}
 	return -1;
 }
 
 void delete(int number)
 {
-	myType *temp = structArray;									// новый массив меньшего размера
+	myType *temp = structArray;												// новый массив меньшего размера
 	temp = (myType*)malloc((i_arrSize-1)*sizeof(myType));
 	int i;
 	for (i = 0; i<i_arrSize; i++)
@@ -195,4 +205,12 @@ void delete(int number)
 	free(structArray);
 	structArray = temp;
 	return;
+}
+
+void gotoxy(int xpos, int ypos)
+{
+	COORD scrn;
+	HANDLE hOuput = GetStdHandle(STD_OUTPUT_HANDLE);
+	scrn.X = xpos; scrn.Y = ypos;
+	SetConsoleCursorPosition(hOuput, scrn);
 }
