@@ -252,3 +252,4 @@ ModelManifest.xml
 *.vcxproj
 *.sln
 *.inc
+/File1.c

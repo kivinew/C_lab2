@@ -5,8 +5,8 @@
 функций входят:
 - «очистка» структурированных переменных;
 - поиск свободной структурированной переменной;
-- ввод элементов (полей) структуры с клавиатуры;
-- вывод элементов (полей) структуры с клавиатуры;
+- ввод полей структуры с клавиатуры;
+- вывод полей структуры;
 - поиск в массиве структуры с минимальным значением заданного поля;
 - сортировка массива структур в порядке возрастания заданного поля (при сортировке можно 
 использовать тот факт, что в Си++ разрешается присваивание структурированных переменных);
@@ -25,34 +25,35 @@
 #define TRUE 1
 #define FALSE 0
 #define ESC 27
-typedef struct student myType;												// синоним для типа "struct student"
 
+typedef struct student myType;												// синоним для struct student
 struct student
 {
-	char *cp_name;
-	char *cp_department;
-	int i_recBook;
-	int i_group;
-	int i_isFull;															// 0 - пустой, 1 - содержит данные
+	char	*cp_name,
+			*cp_department,
+			*cp_group;
+	int		i_recBook,
+			i_isFull;														// флаг: 0 - пустой, 1 - содержит данные
 };
-
-int menu();
+/*--------------------------------------------------------------------------------------------------------------------*/
+int menu(),
+	getClean();
 myType* createArray();
-void enter(int);
-void show(int);
-void delete(int);
-void edit(int);
-void clean(int);
-int getClean();
+void enter(int),
+	show(int),
+	delete(int),
+	edit(int),
+	clean(int);
 void gotoxy(int, int);
+/*-------------------------------------------------------------------------------------------------------------------*/
 myType *structArray;														// глобальный массив структур
 int i_arrSize;																// и его размер
 
 int main()
 {
     setlocale(LC_ALL, "russian");
-	myType single = {"Антонов Ю.В.","Информатика",57,974,1};
-    printf("Студент: %s %i\n", single.cp_name, single.i_group);
+	myType single = {"Антонов Ю.В.","Информатика", "974ИВТ", 35535, 1};
+    printf("Студент: %s %s\n", single.cp_name, single.cp_group);
 
 	structArray = createArray();
 	structArray[0] = single;
@@ -63,12 +64,17 @@ int main()
     return 0;
 }
 
-myType* createArray()											// создание динамического массива структур
+myType* createArray()														// создание динамического массива структур
 {
     printf("Введите количество элементов массива: ");
     scanf_s("%d", &i_arrSize);
 	myType *Students;
     Students = (myType*)malloc(i_arrSize*sizeof(myType));
+	int i;
+	for (i = 0; i<i_arrSize; i++)
+	{
+		Students[i] = {"1", "2", "3", 0, 0};
+	}
     return Students;
 }
 
@@ -156,21 +162,27 @@ void enter(int number)
 void show(int number)
 {
 	gotoxy(10,15);
-	printf("Содержимое %d-го элемента массива: \n", number);
-	printf("|\tФамилия И.О.\t|Факультет\t|№ зачётки\t|№ группы\t|");
+	printf("Содержимое %d-го элемента маcсива: \n", number);
+	printf("|Фамилия И.О.        |Факультет           | № зачётки | Группа |\n");
+	printf("|%20s|%20s|%11d|%8s|\n",	
+		structArray[number].cp_name, 
+		structArray[number].cp_department,
+		structArray[number].i_recBook,
+		structArray[number].cp_group);
 	_getch();
 	return;
 }
 
 void edit(int number)
 {
+
 }
 
 void clean(int number)
 {
 	structArray[number].cp_department = NULL;
 	structArray[number].cp_name = NULL;
-	structArray[number].i_group = 0;
+	structArray[number].cp_group = NULL;
 	structArray[number].i_recBook = 0;
 	structArray[number].i_isFull = 0;
 }
