@@ -17,11 +17,11 @@
 - вычисление с проверкой и использованием всех элементов массива по заданному условию и 
 формуле (например, общая сумма на всех счетах) -  дается индивидуально. 
     Префиксы переменных:				i, c - тип int, char	g - глобальные	р - указатель */
+#include <stdlib.h>
 #include <stdio.h>
 #include <conio.h>
 #include <Windows.h>
 #include <locale.h>
-#include <malloc.h>
 
 #define TRUE 1
 #define FALSE 0
@@ -53,6 +53,7 @@ void addElement(),
 /*-------------------------------------------------------------------------------------------------------------------------*/
 myType *structArray;														// глобальный массив структур
 int gi_arrSize;																// и его размер
+size_t g_buffSize = 10;
 
 int main()
 {
@@ -73,22 +74,22 @@ int main()
     return 0;
 }
 
-myType* createArray()														// создание динамического массива структур
-{
-    printf("Введите количество элементов массива: ");
-    scanf_s("%d", &gi_arrSize);
-	myType *Students;
-    Students = (myType*)malloc(gi_arrSize*sizeof(myType));
-	int i;
-	for (i = 0; i<gi_arrSize; i++)
-	{
-		Students[i].cp_name = NULL;											// инициализация структур
-		Students[i].cp_department = NULL;
-		Students[i].cp_group = NULL;
-		Students[i].i_recBook = 0;
-		Students[i].i_isFull = 0;
-	}
-    return Students;
+myType* createArray()                                                       // возвращает указатель на массив структур
+{                                                                           //
+    printf("Введите количество элементов массива: ");                       //
+    scanf_s("%d", &gi_arrSize);                                             //
+	myType *Students;                                                       //
+    Students = (myType*)malloc(gi_arrSize*sizeof(myType));                  //
+	int i;                                                                  //
+	for (i = 0; i<gi_arrSize; i++)                                          //
+	{                                                                       //
+		Students[i].cp_name = NULL;                                         // инициализация структур
+		Students[i].cp_department = NULL;                                   //
+		Students[i].cp_group = NULL;                                        //
+		Students[i].i_recBook = 0;                                          //
+		Students[i].i_isFull = 0;                                           //
+	}                                                                       //
+    return Students;                                                        //
 }
 
 int menu()
@@ -120,6 +121,7 @@ int menu()
         case '2':
 			printf("Номер элемента для вывода: ");
 			scanf_s("%d", &number);
+            system("cls");
 			gotoxy(10, 15);
 			printf("Содержимое %d-го элемента маcсива: \n", number);
 			showElement(number);
@@ -171,11 +173,11 @@ int menu()
     return TRUE;
 }
 
-void addElement()															// добавить элемент
-{																			//
-	editElement(growArray());												// редактировать элемент, номер которого
-	return;																	// вернула функция увеличения массива
-}
+void addElement()                                                           // добавить элемент
+{                                                                           //
+	editElement(growArray());                                               // редактировать элемент, номер которого
+	return;                                                                 // вернула функция увеличения массива
+}                                                                           //
 
 void showElement(int number)												// вывод выбранного элемента
 {
@@ -184,11 +186,12 @@ void showElement(int number)												// вывод выбранного эл�
 		gcp_lastError = "Выход за пределы массива (showElement)";
 		return;
 	}
+    myType *ptr = structArray+number;
 	printf("|%20s|%20s|%11d|%8s|\n",	
-		structArray[number].cp_name, 
-		structArray[number].cp_department,
-		structArray[number].i_recBook,
-		structArray[number].cp_group);
+        ptr->cp_name,
+        ptr->cp_department,
+        ptr->i_recBook,
+        ptr->cp_group);
 	gcp_lastError = "Ошибок не было";
 	return;
 }
@@ -206,38 +209,40 @@ void showAll()
 	return;
 }
 
-void editElement(int number)
-{
-	if (number < 0 || number >= gi_arrSize)
-	{
-		gcp_lastError = "Выход за пределы массива (editElement)";
-		return;
-	}
-	gcp_lastError = "Ошибок не было";
-	printf("Введите ФИО:\n");
-	scanf_s("%s", structArray[number].cp_name, 40);
-	printf("Факультет:\n");
-	scanf_s("%s", structArray[number].cp_department, 40);
-	printf("Группа:\n");
-	scanf_s("%s", structArray[number].cp_group, 40);
-	printf("Номер зачетки:\n");
-	scanf_s("%i", &structArray[number].i_recBook);
-	structArray[number].i_isFull = 1;
-	return;
+void editElement(int number)                                                // 
+{                                                                           // 
+	if (number < 0 || number >= gi_arrSize)                                 // 
+	{																		// 
+		gcp_lastError = "Выход за пределы массива (editElement)";           // 
+		return;                                                             // 
+	}                                                                       // 
+    myType *ptr = structArray+number;                                       //
+    printf("Введите ФИО:\n");                                               // 
+    fgets(ptr->cp_name, g_buffSize, stdin);                                 // 
+	printf("Факультет:\n");                                                 // 
+	scanf_s("%s", ptr->cp_department, 40);                                  // 
+	printf("Группа:\n");                                                    // 
+	scanf_s("%s", ptr->cp_group, 40);                                       // 
+	printf("Номер зачетки:\n");                                             // 
+	scanf_s("%i", &ptr->i_recBook);                                         // 
+    ptr->i_isFull = 1;                                                      // 
+    gcp_lastError = "Ошибок не было";                                       // 
+    return;                                                                 // 
 }
 
 void cleanElem(int number)
 {
-	if (structArray[number].i_isFull==0)
+    myType *ptr = structArray+number;
+	if (ptr->i_isFull==0)
 	{
 		gcp_lastError = "Элемент пуст";
 		return;
 	}
-	structArray[number].cp_department = NULL;
-	structArray[number].cp_name = NULL;
-	structArray[number].cp_group = NULL;
-	structArray[number].i_recBook = 0;
-	structArray[number].i_isFull = 0;
+    ptr->cp_department = NULL;
+    ptr->cp_name = NULL;
+    ptr->cp_group = NULL;
+    ptr->i_recBook = 0;
+    ptr->i_isFull = 0;
 	gcp_lastError = "Ошибок не было";
 	return;
 }
@@ -264,7 +269,7 @@ int growArray()																// вызывается при добавлени
 	int i;
 	for (i = 0; i<number-1; i++)
 	{
-		temp[i] = structArray[i];
+		*temp++ = *structArray++;
 	}
 	temp[i].cp_department = NULL;
 	temp[i].cp_group = NULL;
