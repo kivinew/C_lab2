@@ -31,7 +31,7 @@ typedef struct student myType;												// синоним для типа "str
 
 struct student
 {
-	char	*cp_name,
+    char	*cp_name,
 			*cp_department,
 			*cp_group;
 	int		i_recBook,
@@ -59,13 +59,13 @@ int sortByName(const void*, const void*),
 myType *structArray;														// глобальный массив структур
 int gi_arrSize;															    // и его размер
 size_t g_buffSize = 10;                                                     // размер буфера ввода для fgets()
-void *gp_sort[4];
+int gp_sort[4];
 
 int main()
 {
     setlocale(LC_ALL, "russian");
 
-	myType single = {"Антонов Ю.В.","ИВТ", "974И", 35535, 1};               // эталонная структура
+	myType single = {"Антонов ","ИВТ", "974И", 35535, 1};               // эталонная структура
     printf("Студент: %s %s\n", single.cp_name, single.cp_group);
 
 	structArray = createArray();                                            // динамическое выделение памяти для массива
@@ -79,7 +79,7 @@ int main()
 
     while ( menu()==TRUE );                                                 // рабочий цикл программы
 
-	free(structArray);                                                      // очистка массива
+	//free(structArray);                                                    // очистка массива
     return 0;
 }
 
@@ -89,15 +89,17 @@ myType* createArray()                                                       // �
     scanf_s("%d", &gi_arrSize);                                             //
 	myType *Students;                                                       //
     Students = (myType*)malloc(gi_arrSize*sizeof(myType));                  //
-	int i;                                                                  //
-	for (i = 0; i<gi_arrSize; i++)                                          //
+	int i=0;                                                                //
+	while ( i++ < gi_arrSize )                                              //
 	{                                                                       //
-		Students[i].cp_name = NULL;                                         // инициализация структур
-		Students[i].cp_department = NULL;                                   //
-		Students[i].cp_group = NULL;                                        //
-		Students[i].i_recBook = 0;                                          //
-		Students[i].i_isFull = 0;                                           //
+		Students->cp_name = "- - - - - - - - - - ";                         // инициализация структур
+		Students->cp_department = "- - - - - - - - - - ";                   //
+        Students->cp_group = "----------";                                  //
+		Students->i_recBook = 0;                                            //
+		Students->i_isFull = 0;                                             //
+        Students++;                                                         //
 	}                                                                       //
+    Students -= i;                                                          // сброс указателя
     return Students;                                                        //
 }
 
@@ -196,7 +198,7 @@ void showElement(int number)												// вывод выбранного эл�
 		return;
 	}
     myType *ptr = structArray+number;
-	printf("|%20s|%20s|%11d|%8s|\n",	
+	printf("|%20s|%20s|%10d|%10s|\n",	
         ptr->cp_name,
         ptr->cp_department,
         ptr->i_recBook,
@@ -209,7 +211,7 @@ void showAll()
 {
 	int i;
 	gotoxy(10, 14);
-	printf("|Фамилия И.О.        |Факультет           | № зачётки | Группа |\n");
+	printf("|Фамилия И.О.        |Факультет           |№ зачётки | Группа   |\n");
 	for (i = 0; i<gi_arrSize; i++)
 	{
 		gotoxy(10, 15+i);
@@ -226,16 +228,19 @@ void editElement(int number)                                                //
 		return;                                                             // 
 	}                                                                       // 
     myType *ptr = structArray+number;                                       //
+    char buffer[10] = "----------";
     printf("Введите ФИО:\n");                                               // 
-    fgets(ptr->cp_name, g_buffSize, stdin);                                 // 
-	printf("Факультет:\n");                                                 // 
-	scanf_s("%s", ptr->cp_department, 40);                                  // 
-	printf("Группа:\n");                                                    // 
-	scanf_s("%s", ptr->cp_group, 40);                                       // 
-	printf("Номер зачетки:\n");                                             // 
-	scanf_s("%i", &ptr->i_recBook);                                         // 
-    ptr->i_isFull = 1;                                                      // 
-    gcp_lastError = "Ошибок не было (edit)";                                       // 
+    fflush(stdin);
+    gets_s(buffer, g_buffSize);                                             // 
+    ptr->cp_name = buffer;
+    printf("Факультет:\n");                                                 // 
+	//scanf_s("%s", ptr->cp_department, 40);                                // 
+	//printf("Группа:\n");                                                  // 
+	//scanf_s("%s", ptr->cp_group, 40);                                     // 
+	//printf("Номер зачетки:\n");                                           // 
+	//scanf_s("%i", &ptr->i_recBook);                                       // 
+    //   ptr->i_isFull = 1;                                                 // 
+    gcp_lastError = "Ошибок не было (edit)";                                // 
     return;                                                                 // 
 }
 
@@ -247,9 +252,9 @@ void cleanElem(int number)
 		gcp_lastError = "Элемент пуст";
 		return;
 	}
-    ptr->cp_department = NULL;
-    ptr->cp_name = NULL;
-    ptr->cp_group = NULL;
+    ptr->cp_department = "--------------------";
+    ptr->cp_name = "--------------------";
+    ptr->cp_group = "----------";
     ptr->i_recBook = 0;
     ptr->i_isFull = 0;
 	gcp_lastError = "Ошибок не было (clean)";
@@ -279,15 +284,15 @@ int growArray()																// вызывается при добавлени
 	for (i = 0; i<number-1; i++)
 	{
 		*temp++ = *structArray++;
-	}
-	temp->cp_department = NULL;                                             // инициализация    |
-	temp->cp_group = NULL;                                                  // добавленного     |
-	temp->cp_name = NULL;                                                   // в конец          |
+	}                                                                       //
+	temp->cp_department = "";                                               // инициализация    |
+	temp->cp_group = "";                                                    // добавленного     |
+	temp->cp_name = "";                                                     // в конец          |
 	temp->i_recBook = 0;                                                    // массива          |
 	temp->i_isFull = 0;                                                     // элемента         |
     temp -= i;                                                              // сдвиг в начало массива временного и  |
     structArray -= i;                                                       // основного указателей.                |
-	free(structArray);                                                      // освобождение памяти из-под старого массива   |
+	//free(structArray);                                                    // освобождение памяти из-под старого массива   |
 	structArray = temp;                                                     // и ориентирование указателя на новый          |
 	return number;
 }
@@ -311,10 +316,10 @@ void deleteElement(int number)
 
 void sortByField()
 {
-    gp_sort[0] = qsort(structArray, gi_arrSize, sizeof(*structArray), sortByName);
-    gp_sort[1] = sortByGroup();
-    gp_sort[2] = sortByDept();
-    gp_sort[3] = sortByRecBook();
+    gp_sort[0] = sortByName;
+    gp_sort[1] = sortByGroup;
+    gp_sort[2] = sortByDept;
+    gp_sort[3] = sortByRecBook;
     printf("Вариант сортировки: \n"
         "\t1 - по фамилии"
         "\t2 - по группе"
@@ -325,7 +330,7 @@ void sortByField()
     choice = _getch();
     if (!choice<1||choice > 3)
     {
-        gp_sort[choice-1];
+        qsort(structArray, gi_arrSize, sizeof(*structArray), gp_sort[choice-1]);
     }
     else
     {
@@ -339,25 +344,25 @@ void sortByField()
 int sortByName(const void *arg1, const void *arg2)
 {
     
-    return structArray;
+    return 1;
 }
 
 int sortByGroup(const void *arg1, const void *arg2)
 {
 
-    return structArray;
+    return 1;
 }
 
 int sortByDept(const void *arg1, const void *arg2)
 {
 
-    return structArray;
+    return 1;
 }
 
 int sortByRecBook(const void *arg1, const void *arg2)
 {
 
-    return structArray;
+    return 1;
 }
 
 void gotoxy(int xpos, int ypos)
