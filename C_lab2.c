@@ -49,11 +49,13 @@ void addElement(),
 	editElement(int),
 	cleanElem(int),
 	gotoxy(int, int),
-	showAll();
+	showAll(),
+    sortByField();
 /*-------------------------------------------------------------------------------------------------------------------------*/
 myType *structArray;														// глобальный массив структур
-int gi_arrSize;																// и его размер
-size_t g_buffSize = 10;
+int gi_arrSize;															    // и его размер
+size_t g_buffSize = 10;                                                     // размер буфера ввода для fgets()
+int gp_sort[4];
 
 int main()
 {
@@ -271,11 +273,13 @@ int growArray()																// вызывается при добавлени
 	{
 		*temp++ = *structArray++;
 	}
-	temp[i].cp_department = NULL;
-	temp[i].cp_group = NULL;
-	temp[i].cp_name = NULL;
-	temp[i].i_recBook = 0;
-	temp[i].i_isFull = 0;
+	temp->cp_department = NULL;
+	temp->cp_group = NULL;
+	temp->cp_name = NULL;
+	temp->i_recBook = 0;
+	temp->i_isFull = 0;
+    temp -= i;
+    structArray -= i;
 	free(structArray);
 	structArray = temp;
 	return number;
@@ -296,6 +300,32 @@ void deleteElement(int number)
 	cleanElem(i);														// очистка последнего элемента после сдвига
 	gcp_lastError = "Ошибок не было";
 	return;
+}
+
+void sortByField()
+{
+    gp_sort[0] = sortByName();
+    gp_sort[1] = sortByGroup();
+    gp_sort[2] = sortByDept();
+    gp_sort[3] = sortByRecBook();
+    printf("Вариант сортировки: \n"
+        "\t1 - по фамилии"
+        "\t2 - по группе"
+        "\t3 - по факультету"
+        "\t4 - по номеру зачётки");
+    int choice;
+    while (!_kbhit());
+    choice = _getch();
+    if (!choice<1||choice > 3)
+    {
+        gp_sort[choice-1];
+    }
+    else
+    {
+        gcp_lastError = "Не верный выбор (sortBy)";
+        return;
+    }
+    return;
 }
 
 void gotoxy(int xpos, int ypos)
