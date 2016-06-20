@@ -253,3 +253,5 @@ ModelManifest.xml
 *.sln
 *.inc
 /File1.c
+/burlakova.c
+/burlakova_2.c

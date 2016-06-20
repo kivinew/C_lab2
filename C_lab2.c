@@ -1,4 +1,4 @@
-﻿/* Определить структурированный тип, определить набор функций для работы с массивом структур. 
+/* Определить структурированный тип, определить набор функций для работы с массивом структур. 
 В структурированной переменной предусмотреть способ отметки ее как не содержащей данных 
 (т.е. "пустой"). Функции должны работать с массивом структур или с отдельной структурой 
 через указатели, а также при необходимости возвращать указатель на структуру. В перечень 
@@ -26,17 +26,16 @@
 #define TRUE 1
 #define FALSE 0
 #define ESC 27
+#define STRING_SIZE 10
 
-typedef struct student myType;												// синоним для типа "struct student"
-
-struct student
+typedef struct
 {
-    char	*cp_name,
-			*cp_department,
-			*cp_group;
+    char	cp_name[15],
+			cp_department[10],
+			cp_group[10];
 	int		i_recBook,
 			i_isFull;														// флаг: 0 - пустой, 1 - содержит данные
-};
+}myType;
 
 char *gcp_lastError = NULL;
 int menu();
@@ -50,22 +49,21 @@ void addElement(),
 	gotoxy(int, int),
 	showAll(),
     sortByField();
-myType* createArray();
 int sortByName(const void*, const void*),
     sortByDept(const void*, const void*),
     sortByGroup(const void*, const void*),
     sortByRecBook(const void*, const void*);
+myType* createArray();
 /*-------------------------------------------------------------------------------------------------------------------------*/
 myType *structArray;														// глобальный массив структур
 int gi_arrSize;															    // и его размер
-size_t g_buffSize = 10;                                                     // размер буфера ввода для fgets()
 int gp_sort[4];
 
 int main()
 {
-    setlocale(LC_ALL, "russian");
-
-	myType single = {"Антонов ","ИВТ", "974И", 35535, 1};               // эталонная структура
+    //setlocale(LC_ALL, "rus");
+	SetConsoleOutputCP(1251);
+	myType single = {"Антонов ","ИВТ", "974И", 35535, 1};					// эталонная структура
     printf("Студент: %s %s\n", single.cp_name, single.cp_group);
 
 	structArray = createArray();                                            // динамическое выделение памяти для массива
@@ -89,17 +87,6 @@ myType* createArray()                                                       // �
     scanf_s("%d", &gi_arrSize);                                             //
 	myType *Students;                                                       //
     Students = (myType*)malloc(gi_arrSize*sizeof(myType));                  //
-	int i=0;                                                                //
-	while ( i++ < gi_arrSize )                                              //
-	{                                                                       //
-		Students->cp_name = "- - - - - - - - - - ";                         // инициализация структур
-		Students->cp_department = "- - - - - - - - - - ";                   //
-        Students->cp_group = "----------";                                  //
-		Students->i_recBook = 0;                                            //
-		Students->i_isFull = 0;                                             //
-        Students++;                                                         //
-	}                                                                       //
-    Students -= i;                                                          // сброс указателя
     return Students;                                                        //
 }
 
@@ -228,18 +215,16 @@ void editElement(int number)                                                //
 		return;                                                             // 
 	}                                                                       // 
     myType *ptr = structArray+number;                                       //
-    char buffer[10] = "----------";
-    printf("Введите ФИО:\n");                                               // 
-    fflush(stdin);
-    gets_s(buffer, g_buffSize);                                             // 
-    ptr->cp_name = buffer;
-    printf("Факультет:\n");                                                 // 
-	//scanf_s("%s", ptr->cp_department, 40);                                // 
-	//printf("Группа:\n");                                                  // 
-	//scanf_s("%s", ptr->cp_group, 40);                                     // 
-	//printf("Номер зачетки:\n");                                           // 
-	//scanf_s("%i", &ptr->i_recBook);                                       // 
-    //   ptr->i_isFull = 1;                                                 // 
+	fflush(stdin);															//
+	printf("Введите ФИО: ");                                               // 
+    fgets(ptr->cp_name, STRING_SIZE+5, stdin);								// 
+    printf("Факультет: ");                                                 // 
+	fgets(ptr->cp_department, STRING_SIZE, stdin);							// 
+	printf("Группа: ");													// 
+	fgets(ptr->cp_group, STRING_SIZE, stdin);								// 
+	printf("Номер зачетки: ");												// 
+	scanf_s("%i", &ptr->i_recBook);											// 
+    ptr->i_isFull = 1;														// 
     gcp_lastError = "Ошибок не было (edit)";                                // 
     return;                                                                 // 
 }
@@ -252,10 +237,10 @@ void cleanElem(int number)
 		gcp_lastError = "Элемент пуст";
 		return;
 	}
-    ptr->cp_department = "--------------------";
-    ptr->cp_name = "--------------------";
-    ptr->cp_group = "----------";
-    ptr->i_recBook = 0;
+    //ptr->cp_department = "--------------------";
+    //ptr->cp_name = "--------------------";
+    //ptr->cp_group = "----------";
+    //ptr->i_recBook = 0;
     ptr->i_isFull = 0;
 	gcp_lastError = "Ошибок не было (clean)";
 	return;
@@ -277,24 +262,23 @@ int getCleanElem()
 
 int growArray()																// вызывается при добавлении элемента в массив.
 {
-	gi_arrSize += 1;                                                        // увеличиваем размер   |
-	int number = gi_arrSize;                                                // будущего массива.    |
-	myType *temp = (myType*)malloc((number)*sizeof(myType));				// динамическое выделение памяти        |
-	int i;                                                                  // под новый массив размера "number".   |
-	for (i = 0; i<number-1; i++)
+	gi_arrSize += 1;                                                        // увеличиваем размер будущего массива. |
+	myType *temp = (myType*)malloc((gi_arrSize)*sizeof(myType));			// динамическое выделение памяти        |
+	int i;                                                                  // под новый массив размера "size+1".   |
+	for (i = 0; i<gi_arrSize-1; i++)
 	{
 		*temp++ = *structArray++;
 	}                                                                       //
-	temp->cp_department = "";                                               // инициализация    |
-	temp->cp_group = "";                                                    // добавленного     |
-	temp->cp_name = "";                                                     // в конец          |
+	//temp->cp_name = "";													// инициализация    |
+	//temp->cp_group = "";													// добавленного     |
+	//temp->cp_name = "";													// в конец          |
 	temp->i_recBook = 0;                                                    // массива          |
 	temp->i_isFull = 0;                                                     // элемента         |
     temp -= i;                                                              // сдвиг в начало массива временного и  |
     structArray -= i;                                                       // основного указателей.                |
-	//free(structArray);                                                    // освобождение памяти из-под старого массива   |
+	//free(structArray);													// освобождение памяти из-под старого массива   |
 	structArray = temp;                                                     // и ориентирование указателя на новый          |
-	return number;
+	return gi_arrSize-1;
 }
 
 void deleteElement(int number)
