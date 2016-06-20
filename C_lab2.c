@@ -28,7 +28,7 @@
 #define ESC 27
 #define STRING_SIZE 10
 
-typedef struct
+typedef struct student
 {
     char	cp_name[15],
 			cp_department[10],
@@ -61,16 +61,15 @@ int gp_sort[4];
 
 int main()
 {
-    //setlocale(LC_ALL, "rus");
-	SetConsoleOutputCP(1251);
-	myType single = {"Антонов ","ИВТ", "974И", 35535, 1};					// эталонная структура
+	SetConsoleOutputCP(CP_UTF8);
+	myType single = {"Антонов", "ИВТ", "974И", 35535, 1};					// эталонная структура
     printf("Студент: %s %s\n", single.cp_name, single.cp_group);
 
 	structArray = createArray();                                            // динамическое выделение памяти для массива
 	int i;
 	for (i = 0; i < gi_arrSize; i++)                                        // сдвигаем указатель по массиву
 	{                                                                       // и присваиваем его элементам
-		*structArray++ = single;                                            // значение эталонной структуры
+		*structArray++ = single;											// значение эталонной структуры
 	}                                                                       // затем сдвигаем указатель structArray
     structArray -= i;                                                       // в начало массива
 	system("cls");
@@ -198,7 +197,7 @@ void showAll()
 {
 	int i;
 	gotoxy(10, 14);
-	printf("|Фамилия И.О.        |Факультет           |№ зачётки | Группа   |\n");
+	printf("|        Фамилия И.О.|           Факультет| № зачётки|    Группа|");
 	for (i = 0; i<gi_arrSize; i++)
 	{
 		gotoxy(10, 15+i);
@@ -213,16 +212,19 @@ void editElement(int number)                                                //
 	{																		// 
 		gcp_lastError = "Выход за пределы массива (editElement)";           // 
 		return;                                                             // 
-	}                                                                       // 
+	}                                                                       //
     myType *ptr = structArray+number;                                       //
+	printf("Введите ФИО: ");												// 
 	fflush(stdin);															//
-	printf("Введите ФИО: ");                                               // 
-    fgets(ptr->cp_name, STRING_SIZE+5, stdin);								// 
-    printf("Факультет: ");                                                 // 
+	fgets(ptr->cp_name, STRING_SIZE+5, stdin);								// 
+    printf("Факультет: ");													// 
+	fflush(stdin);															//
 	fgets(ptr->cp_department, STRING_SIZE, stdin);							// 
-	printf("Группа: ");													// 
+	printf("Группа: ");														// 
+	fflush(stdin);															//
 	fgets(ptr->cp_group, STRING_SIZE, stdin);								// 
 	printf("Номер зачетки: ");												// 
+	fflush(stdin);															//
 	scanf_s("%i", &ptr->i_recBook);											// 
     ptr->i_isFull = 1;														// 
     gcp_lastError = "Ошибок не было (edit)";                                // 
@@ -276,7 +278,7 @@ int growArray()																// вызывается при добавлени
 	temp->i_isFull = 0;                                                     // элемента         |
     temp -= i;                                                              // сдвиг в начало массива временного и  |
     structArray -= i;                                                       // основного указателей.                |
-	//free(structArray);													// освобождение памяти из-под старого массива   |
+	free(structArray);														// освобождение памяти из-под старого массива   |
 	structArray = temp;                                                     // и ориентирование указателя на новый          |
 	return gi_arrSize-1;
 }
@@ -293,7 +295,7 @@ void deleteElement(int number)
 	{
 		structArray[i] = structArray[i + 1];
 	}
-	cleanElem(i);														// очистка последнего элемента после сдвига
+	cleanElem(i);															// очистка последнего элемента после сдвига
 	gcp_lastError = "Ошибок не было (delete)";
 	return;
 }
