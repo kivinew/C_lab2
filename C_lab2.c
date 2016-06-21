@@ -32,33 +32,33 @@
 typedef struct student
 {
 	char	cp_name[20],
-		cp_department[20],
-		cp_group[10];
+			cp_department[20],
+			cp_group[10];
 	int		i_recBook,
-		i_isFull;														// флаг: 0 - пустой, 1 - содержит данные
+			i_isFull;														// флаг: 0 - пустой, 1 - содержит данные
 }myType;
 
-char *gcp_lastError = NULL;
-int menu();
-int	getCleanElem();
-int	growArray();
+int	menu(),
+	getCleanElem(),
+	growArray();
 void addElement(),
-showElement(int),
-deleteElement(int),
-editElement(int),
-cleanElem(int),
-gotoxy(int, int),
-showAll(),
-sortByField();
+	showElement(int),
+	deleteElement(int),
+	editElement(int),
+	cleanElem(int),
+	gotoxy(int, int),
+	showAll(),
+	sortByField();
 int sortByName(const void*, const void*),
-sortByDept(const void*, const void*),
-sortByGroup(const void*, const void*),
-sortByRecBook(const void*, const void*);
+	sortByDept(const void*, const void*),
+	sortByGroup(const void*, const void*),
+	sortByRecBook(const void*, const void*);
 myType* createArray();
 /*-------------------------------------------------------------------------------------------------------------------------*/
+char *gcp_lastError = NULL;													// строка сообщений об ошибках
 myType *structArray;														// глобальный массив структур
 int gi_arrSize;															    // и его размер
-int gp_sortFuncArr[4];
+int gp_sortFuncArr[4];														// массив из четырёх сортировок
 
 int main()
 {
@@ -77,7 +77,7 @@ int main()
 
 	while (menu()==TRUE);													// рабочий цикл программы
 
-	//free(structArray);                                                    // очистка массива
+	free(structArray);														// очистка массива
 	return 0;
 }
 
@@ -94,7 +94,7 @@ int menu()
 {
 	system("cls");
 	printf("Размер массива: %d\t"
-		"Последняя ошибка: %s\n", gi_arrSize, gcp_lastError);
+		"Сообщения об ошибках: %s\n", gi_arrSize, gcp_lastError);
 	printf("\t1 - добавить элемент\n"
 		"\t2 - вывод данных\n"
 		"\t3 - изменение элемента\n"
@@ -118,9 +118,14 @@ int menu()
 	case '2':
 		printf("Номер элемента для вывода: ");
 		scanf_s("%d", &number);
+		if (number < 0||number > gi_arrSize)
+		{
+			gcp_lastError = "Выход за пределы массива (show)";
+			break;
+		}
 		if ((structArray+number)->i_isFull = 0)
 		{
-			gcp_lastError = "Элемент пуст (case: 2(show) )";
+			gcp_lastError = "Элемент пуст (show)";
 			break;
 		}
 		system("cls");
@@ -312,26 +317,27 @@ void deleteElement(int number)
 	return;
 }
 
-void sortByField()
+void sortByField()																// сортировка массива по полям
 {
-	gp_sortFuncArr[0] = sortByName;
-	gp_sortFuncArr[1] = sortByGroup;
-	gp_sortFuncArr[2] = sortByDept;
-	gp_sortFuncArr[3] = sortByRecBook;
+	gp_sortFuncArr[0] = sortByName;												// заполняю массив сортировок
+	gp_sortFuncArr[1] = sortByDept;												//
+	gp_sortFuncArr[2] = sortByGroup;											//
+	gp_sortFuncArr[3] = sortByRecBook;											//
 	printf("Вариант сортировки: \n"
 		"\t1 - по фамилии"
-		"\t2 - по группе"
-		"\t3 - по факультету"
+		"\t2 - по факультету"
+		"\t3 - по группе"
 		"\t4 - по номеру зачётки");
 	int choice;
 	choice = _getch();
-	if (choice < 1 || choice > 3)
+	if (choice < '1' || choice > '4')
 	{
 		gcp_lastError = "Не верный выбор (sortBy)";
 		return;
 	}
-	qsort(structArray, gi_arrSize, sizeof(*structArray), gp_sortFuncArr[choice-1]);
-	gcp_lastError = "Ошибок не было (sortBy)";
+	choice = choice -'0';														// 
+	qsort(structArray, gi_arrSize, sizeof(myType), gp_sortFuncArr[choice-1]);	// вызов библиотечной сортировки
+	gcp_lastError = "Ошибок не было (sortBy)";									// с выбранным полем сортировки
 	return;
 }
 
