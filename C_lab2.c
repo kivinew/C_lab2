@@ -1,22 +1,23 @@
-/* Определить структурированный тип, определить набор функций для работы с массивом структур. 
-В структурированной переменной предусмотреть способ отметки ее как не содержащей данных 
-(т.е. "пустой"). Функции должны работать с массивом структур или с отдельной структурой 
-через указатели, а также при необходимости возвращать указатель на структуру. В перечень 
+/* Определить структурированный тип, определить набор функций для работы с массивом структур.
+В структурированной переменной предусмотреть способ отметки ее как не содержащей данных
+(т.е. "пустой"). Функции должны работать с массивом структур или с отдельной структурой
+через указатели, а также при необходимости возвращать указатель на структуру. В перечень
 функций входят:
 - «очистка» структурированных переменных;
 - поиск свободной структурированной переменной;
 - ввод элементов (полей) структуры с клавиатуры;
 - вывод элементов (полей) структуры с клавиатуры;
 - поиск в массиве структуры с минимальным значением заданного поля;
-- сортировка массива структур в порядке возрастания заданного поля (при сортировке можно 
+- сортировка массива структур в порядке возрастания заданного поля (при сортировке можно
 использовать тот факт, что в Си++ разрешается присваивание структурированных переменных);
-- поиск в массиве структур элемента с заданным значением поля или с наиболее близким к 
-нему по значению. 
+- поиск в массиве структур элемента с заданным значением поля или с наиболее близким к
+нему по значению.
 - удаление заданного элемента;
 - изменение (редактирование) заданного элемента.
-- вычисление с проверкой и использованием всех элементов массива по заданному условию и 
-формуле (например, общая сумма на всех счетах) -  дается индивидуально. 
-    Префиксы переменных:				i, c - тип int, char	g - глобальные	р - указатель */
+- вычисление с проверкой и использованием всех элементов массива по заданному условию и
+формуле (например, общая сумма на всех счетах) -  дается индивидуально.
+	Префиксы переменных:				i, c - тип int, char	g - глобальные	р - указатель */
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdlib.h>
 #include <stdio.h>
 #include <conio.h>
@@ -30,11 +31,11 @@
 
 typedef struct student
 {
-    char	cp_name[15],
-			cp_department[10],
-			cp_group[10];
+	char	cp_name[20],
+		cp_department[20],
+		cp_group[10];
 	int		i_recBook,
-			i_isFull;														// флаг: 0 - пустой, 1 - содержит данные
+		i_isFull;														// флаг: 0 - пустой, 1 - содержит данные
 }myType;
 
 char *gcp_lastError = NULL;
@@ -42,132 +43,142 @@ int menu();
 int	getCleanElem();
 int	growArray();
 void addElement(),
-	showElement(int),
-	deleteElement(int),
-	editElement(int),
-	cleanElem(int),
-	gotoxy(int, int),
-	showAll(),
-    sortByField();
+showElement(int),
+deleteElement(int),
+editElement(int),
+cleanElem(int),
+gotoxy(int, int),
+showAll(),
+sortByField();
 int sortByName(const void*, const void*),
-    sortByDept(const void*, const void*),
-    sortByGroup(const void*, const void*),
-    sortByRecBook(const void*, const void*);
+sortByDept(const void*, const void*),
+sortByGroup(const void*, const void*),
+sortByRecBook(const void*, const void*);
 myType* createArray();
 /*-------------------------------------------------------------------------------------------------------------------------*/
 myType *structArray;														// глобальный массив структур
 int gi_arrSize;															    // и его размер
-int gp_sort[4];
+int gp_sortFuncArr[4];
 
 int main()
 {
 	SetConsoleOutputCP(CP_UTF8);
-	myType single = {"Антонов", "ИВТ", "974И", 35535, 1};					// эталонная структура
-    printf("Студент: %s %s\n", single.cp_name, single.cp_group);
+	myType single = {"Антонов", "ИВТ", "974И", 3535, 1};					// эталонная структура
+	printf("Студент: %s %s\n", single.cp_name, single.cp_group);
 
 	structArray = createArray();                                            // динамическое выделение памяти для массива
 	int i;
-	for (i = 0; i < gi_arrSize; i++)                                        // сдвигаем указатель по массиву
+	for (i = 0; i<gi_arrSize; i++)											// сдвигаем указатель по массиву
 	{                                                                       // и присваиваем его элементам
 		*structArray++ = single;											// значение эталонной структуры
 	}                                                                       // затем сдвигаем указатель structArray
-    structArray -= i;                                                       // в начало массива
+	structArray -= i;                                                       // в начало массива
 	system("cls");
 
-    while ( menu()==TRUE );                                                 // рабочий цикл программы
+	while (menu()==TRUE);													// рабочий цикл программы
 
 	//free(structArray);                                                    // очистка массива
-    return 0;
+	return 0;
 }
 
 myType* createArray()                                                       // возвращает указатель на массив структур
 {                                                                           //
-    printf("Введите количество элементов массива: ");                       //
-    scanf_s("%d", &gi_arrSize);                                             //
+	printf("Введите количество элементов массива: ");                       //
+	scanf_s("%d", &gi_arrSize);                                             //
 	myType *Students;                                                       //
-    Students = (myType*)malloc(gi_arrSize*sizeof(myType));                  //
-    return Students;                                                        //
+	Students = (myType*)malloc(gi_arrSize*sizeof(myType));                  //
+	return Students;                                                        //
 }
 
 int menu()
 {
-    system("cls");
-	printf("Размер массива: %d\t", gi_arrSize);
-	printf("Последняя ошибка: %s\n", gcp_lastError);
+	system("cls");
+	printf("Размер массива: %d\t"
+		"Последняя ошибка: %s\n", gi_arrSize, gcp_lastError);
 	printf("\t1 - добавить элемент\n"
-			"\t2 - вывод данных\n"
-			"\t3 - изменение элемента\n"
-			"\t4 - удаление элемента из массива\n"
-			"\t5 - очистка элемента\n"
-			"\t6 - найти свободный элемент\n"
-			"\t7 - найти элемент с минимальным значением поля \"Группа\"\n"
-			"\t8 - найти элемент со значением поля \"Группа\", близким к указанному\n"
-			"\t9 - поиск элементов со значением поля \"Группа\" равным указанному\n"
-			"\t0 - сортировка массива по возрастанию значения поля \"Группа\"\n"
-			"\tESC - выход\n");
+		"\t2 - вывод данных\n"
+		"\t3 - изменение элемента\n"
+		"\t4 - удаление элемента из массива\n"
+		"\t5 - очистка элемента\n"
+		"\t6 - найти свободный элемент\n"
+		"\t7 - найти элемент с минимальным значением поля \"Группа\"\n"
+		"\t8 - найти элемент со значением поля \"Группа\", близким к указанному\n"
+		"\t9 - поиск элементов со значением поля \"Группа\" равным указанному\n"
+		"\t0 - сортировка массива по возрастанию значения поля \"Группа\"\n"
+		"\tESC - выход\n");
 	showAll();                                                              // вывод всех элементов
 	char choice;
-	while (!_kbhit());                                                      // ожидание выбора
-    choice = _getch();
-	int number;
-	switch(choice)
-    {
-        case '1':
-			addElement();
-            break;
-        case '2':
-			printf("Номер элемента для вывода: ");
-			scanf_s("%d", &number);
-            system("cls");
-			gotoxy(10, 15);
-			printf("Содержимое %d-го элемента маcсива: \n", number);
-			showElement(number);
+	choice = _getch();
+	int number, emptyNumber;												// номер элемента/"пустого" элемента
+	switch (choice)
+	{
+	case '1':
+		addElement();
+		break;
+	case '2':
+		printf("Номер элемента для вывода: ");
+		scanf_s("%d", &number);
+		if ((structArray+number)->i_isFull = 0)
+		{
+			gcp_lastError = "Элемент пуст (case: 2(show) )";
+			break;
+		}
+		system("cls");
+		gotoxy(10, 5);
+		printf("Содержимое %d-го элемента маcсива: \n", number);
+		printf("|  №|        Фамилия И.О.|           Факультет|    Группа| № зачётки|\n");
+		showElement(number);
+		_getch();
+		break;
+	case '3':
+		printf("Номер элемента для изменения: ");
+		scanf_s("%d", &number);
+		editElement(number);
+		break;
+	case '4':
+		printf("Номер элемента для удаления: ");
+		scanf_s("%d", &number);
+		deleteElement(number);
+		break;
+	case '5':
+		printf("Номер элемента для очистки: ");
+		scanf_s("%d", &number);
+		cleanElem(number);
+		break;
+	case '6':
+		emptyNumber = getCleanElem();									// функция вернёт номер пустого
+		if (emptyNumber < 0)											// или -1, если такого нет
+		{
+			system("cls");
+			gotoxy(20, 10);
+			printf("Пустых элементов нет!");
 			_getch();
 			break;
-		case '3':
-			printf("Номер элемента для изменения: ");
-			scanf_s("%d", &number);
-			editElement(number);
-			break;
-		case '4':
-			printf("Номер элемента для удаления: ");
-			scanf_s("%d", &number);
-			deleteElement(number);        
-			break;
-		case '5':
-			printf("Номер элемента для очистки: ");
-			scanf_s("%d", &number);
-			cleanElem(number);
-			break;
-		case '6':
-			number = getCleanElem();										// функция вернёт номер пустого
-			if (number>=0)													// или -1, если такого нет
-			{
-				showElement(number);
-			}
-			else
-			{
-				printf("\nПустых элементов нет!\n");
-				_getch();
-			}
-			break;
-		case '7':
-			//getMinField();
-			break;
-		case '8':
-			//getFieldIs();
-            break;
-		case '9':
-			//searchByCondition();
-			break;
-		case '0':
-			sortByField();
-			break;
-        case ESC:
-            return FALSE;
-            break;
-    }
-    return TRUE;
+		}			
+		system("cls");
+		gotoxy(10, 5);
+		printf("Пустой элемент №: %d\n", emptyNumber);
+		printf("|  №|        Фамилия И.О.|           Факультет|    Группа| № зачётки|\n");
+		showElement(emptyNumber);
+		_getch();
+		break;
+	case '7':
+		//getMinField();
+		break;
+	case '8':
+		//getFieldIs();
+		break;
+	case '9':
+		//searchByCondition();
+		break;
+	case '0':
+		sortByField();
+		break;
+	case ESC:
+		return FALSE;
+		break;
+	}
+	return TRUE;
 }
 
 void addElement()                                                           // добавить элемент
@@ -178,17 +189,19 @@ void addElement()                                                           // �
 
 void showElement(int number)												// вывод выбранного элемента
 {
-	if (number < 0 || number >= gi_arrSize)
+	if (number<0 || number >= gi_arrSize)
 	{
 		gcp_lastError = "Выход за пределы массива (showElement)";
 		return;
 	}
-    myType *ptr = structArray+number;
-	printf("|%20s|%20s|%10d|%10s|\n",	
-        ptr->cp_name,
-        ptr->cp_department,
-        ptr->i_recBook,
-        ptr->cp_group);
+	myType *tempPtr = structArray + number;
+
+	printf("|%3d|%20s|%20s|%10s|%10d|\n",
+		number,
+		tempPtr->cp_name,
+		tempPtr->cp_department,
+		tempPtr->cp_group,
+		tempPtr->i_recBook);
 	gcp_lastError = "Ошибок не было (show)";
 	return;
 }
@@ -197,7 +210,7 @@ void showAll()
 {
 	int i;
 	gotoxy(10, 14);
-	printf("|        Фамилия И.О.|           Факультет| № зачётки|    Группа|");
+	printf("|  №|        Фамилия И.О.|           Факультет|    Группа| № зачётки|");
 	for (i = 0; i<gi_arrSize; i++)
 	{
 		gotoxy(10, 15+i);
@@ -208,42 +221,38 @@ void showAll()
 
 void editElement(int number)                                                // 
 {                                                                           // 
-	if (number < 0 || number >= gi_arrSize)                                 // 
+	if (number<0||number>=gi_arrSize)                                 // 
 	{																		// 
 		gcp_lastError = "Выход за пределы массива (editElement)";           // 
 		return;                                                             // 
 	}                                                                       //
-    myType *ptr = structArray+number;                                       //
-	printf("Введите ФИО: ");												// 
-	fflush(stdin);															//
-	fgets(ptr->cp_name, STRING_SIZE+5, stdin);								// 
-    printf("Факультет: ");													// 
-	fflush(stdin);															//
-	fgets(ptr->cp_department, STRING_SIZE, stdin);							// 
+	myType *tempPtr = structArray+number;                                   // указатель ориентирую на выбранный элемент структуры
+	printf("Введите ФИО: ");												// и запрашиваю новые данные полей
+	scanf("%s", tempPtr->cp_name);											// 
+	printf("Факультет: ");													// 
+	scanf("%s", tempPtr->cp_department);									// 
 	printf("Группа: ");														// 
-	fflush(stdin);															//
-	fgets(ptr->cp_group, STRING_SIZE, stdin);								// 
-	printf("Номер зачетки: ");												// 
-	fflush(stdin);															//
-	scanf_s("%i", &ptr->i_recBook);											// 
-    ptr->i_isFull = 1;														// 
-    gcp_lastError = "Ошибок не было (edit)";                                // 
-    return;                                                                 // 
+	scanf("%s", tempPtr->cp_group);											// 
+	printf("Номер зачётки: ");												// 
+	scanf("%i", &tempPtr->i_recBook);										// 
+	tempPtr->i_isFull = 1;													// 
+	gcp_lastError = "Ошибок не было (edit)";                                // 
+	return;                                                                 // 
 }
 
 void cleanElem(int number)
 {
-    myType *ptr = structArray+number;
-	if (ptr->i_isFull==0)
+	myType *tempPtr = structArray + number;
+	if (tempPtr->i_isFull==0)
 	{
-		gcp_lastError = "Элемент пуст";
+		gcp_lastError = "Элемент пуст (clean)";
 		return;
 	}
-    //ptr->cp_department = "--------------------";
-    //ptr->cp_name = "--------------------";
-    //ptr->cp_group = "----------";
-    //ptr->i_recBook = 0;
-    ptr->i_isFull = 0;
+	strcpy(tempPtr->cp_department, "");
+	strcpy(tempPtr->cp_name, "");
+	strcpy(tempPtr->cp_group, "");
+	tempPtr->i_recBook = 0;
+	tempPtr->i_isFull = 0;
 	gcp_lastError = "Ошибок не было (clean)";
 	return;
 }
@@ -251,13 +260,16 @@ void cleanElem(int number)
 int getCleanElem()
 {
 	int i;
-	for(i=0; i<gi_arrSize; i++)
+	for (i = 0; i<gi_arrSize; i++)
 	{
-		if (!structArray[i].i_isFull)
+		if (structArray->i_isFull == 0)
 		{
+			structArray -= i;
 			return i;
 		}
+		structArray++;
 	}
+	structArray -= i;
 	gcp_lastError = "Ошибок не было (getClean)";
 	return -1;
 }
@@ -265,35 +277,35 @@ int getCleanElem()
 int growArray()																// вызывается при добавлении элемента в массив.
 {
 	gi_arrSize += 1;                                                        // увеличиваем размер будущего массива. |
-	myType *temp = (myType*)malloc((gi_arrSize)*sizeof(myType));			// динамическое выделение памяти        |
+	myType *tempPtr = (myType*)malloc((gi_arrSize)*sizeof(myType));			// динамическое выделение памяти        |
 	int i;                                                                  // под новый массив размера "size+1".   |
-	for (i = 0; i<gi_arrSize-1; i++)
-	{
-		*temp++ = *structArray++;
+	for (i = 0; i<gi_arrSize-1; i++)										// копирование всех					|
+	{																		// элементов исходного массива		|
+		*tempPtr++ = *structArray++;										// в новый путём сдвига указателей.	|
 	}                                                                       //
-	//temp->cp_name = "";													// инициализация    |
-	//temp->cp_group = "";													// добавленного     |
-	//temp->cp_name = "";													// в конец          |
-	temp->i_recBook = 0;                                                    // массива          |
-	temp->i_isFull = 0;                                                     // элемента         |
-    temp -= i;                                                              // сдвиг в начало массива временного и  |
-    structArray -= i;                                                       // основного указателей.                |
+	strcpy(tempPtr->cp_department, "");										// инициализация    |
+	strcpy(tempPtr->cp_group, "");											// добавленного     |
+	strcpy(tempPtr->cp_name, "");											// в конец          |
+	tempPtr->i_recBook = 0;                                                 // массива          |
+	tempPtr->i_isFull = 0;                                                  // нового элемента. |
+	tempPtr -= i;                                                           // сдвиг в начало массива временного и  |
+	structArray -= i;                                                       // основного указателей.                |
 	free(structArray);														// освобождение памяти из-под старого массива   |
-	structArray = temp;                                                     // и ориентирование указателя на новый          |
+	structArray = tempPtr;                                                  // и ориентирование указателя на новый          |
 	return gi_arrSize-1;
 }
 
 void deleteElement(int number)
 {
-	if (number >= gi_arrSize)
+	if (number>=gi_arrSize)
 	{
 		gcp_lastError = "Выход за пределы массива (deleteElement)";
 		return;
 	}
 	int i;
-	for (i = number; i < gi_arrSize-1; i++)
+	for (i = number; i<gi_arrSize-1; i++)
 	{
-		structArray[i] = structArray[i + 1];
+		structArray[i] = structArray[i+1];
 	}
 	cleanElem(i);															// очистка последнего элемента после сдвига
 	gcp_lastError = "Ошибок не было (delete)";
@@ -302,53 +314,53 @@ void deleteElement(int number)
 
 void sortByField()
 {
-    gp_sort[0] = sortByName;
-    gp_sort[1] = sortByGroup;
-    gp_sort[2] = sortByDept;
-    gp_sort[3] = sortByRecBook;
-    printf("Вариант сортировки: \n"
-        "\t1 - по фамилии"
-        "\t2 - по группе"
-        "\t3 - по факультету"
-        "\t4 - по номеру зачётки");
-    int choice;
-    while (!_kbhit());
-    choice = _getch();
-    if (!choice<1||choice > 3)
-    {
-        qsort(structArray, gi_arrSize, sizeof(*structArray), gp_sort[choice-1]);
-    }
-    else
-    {
-        gcp_lastError = "Не верный выбор (sortBy)";
-        return;
-    }
-    gcp_lastError = "Ошибок не было (sortBy)";
-    return;
+	gp_sortFuncArr[0] = sortByName;
+	gp_sortFuncArr[1] = sortByGroup;
+	gp_sortFuncArr[2] = sortByDept;
+	gp_sortFuncArr[3] = sortByRecBook;
+	printf("Вариант сортировки: \n"
+		"\t1 - по фамилии"
+		"\t2 - по группе"
+		"\t3 - по факультету"
+		"\t4 - по номеру зачётки");
+	int choice;
+	choice = _getch();
+	if (choice < 1 || choice > 3)
+	{
+		gcp_lastError = "Не верный выбор (sortBy)";
+		return;
+	}
+	qsort(structArray, gi_arrSize, sizeof(*structArray), gp_sortFuncArr[choice-1]);
+	gcp_lastError = "Ошибок не было (sortBy)";
+	return;
 }
 
 int sortByName(const void *arg1, const void *arg2)
 {
-    
-    return 1;
+	myType *one = (myType*)arg1;
+	myType *two = (myType*)arg2;
+	return strcmp(one->cp_name, two->cp_name);
 }
 
 int sortByGroup(const void *arg1, const void *arg2)
 {
-
-    return 1;
+	myType *one = (myType*)arg1;
+	myType *two = (myType*)arg2;
+	return strcmp(one->cp_group, two->cp_group);
 }
 
 int sortByDept(const void *arg1, const void *arg2)
 {
-
-    return 1;
+	myType *one = (myType*)arg1;
+	myType *two = (myType*)arg2;
+	return strcmp(one->cp_department, two->cp_department);
 }
 
 int sortByRecBook(const void *arg1, const void *arg2)
 {
-
-    return 1;
+	int one = ((myType*)arg1)->i_recBook;
+	int two = ((myType*)arg2)->i_recBook;
+	return one-two;
 }
 
 void gotoxy(int xpos, int ypos)
