@@ -52,7 +52,8 @@ int sortByName(const void*, const void*),
 	sortByDept(const void*, const void*),
 	sortByGroup(const void*, const void*),
 	sortByRecBook(const void*, const void*),
-	getMinRecord();
+	getMinValue(),
+	findValue(int);
 myType	*createArray();
 
 /*-------------------------------------------------------------------------------------------------------------------------*/
@@ -112,7 +113,11 @@ int menu()
 	showAll();                                                              // вывод всех элементов
 	char choice;
 	choice = _getch();
-	int number, emptyNumber, minRec;												// номер элемента/"пустого" элемента
+	int number,
+		emptyNumber, 
+		minRec,
+		value,
+		entryNum;																// номер элемента/"пустого" элемента
 	switch (choice)
 	{
 	case '1':
@@ -175,7 +180,7 @@ int menu()
 		_getch();
 		break;
 	case '7':
-		minRec = getMinRecord();
+		minRec = getMinValue();
 		system("cls");
 		gotoxy(10, 12);
 		printf("Запись с минимальным значением номера зачётки: %d\n", minRec);
@@ -186,8 +191,17 @@ int menu()
 		_getch();
 		break;
 	case '8':
-		//getRecIs();
-		break;
+		printf("Значение номера зачётки для поиска: ");
+		scanf("%d", &value);
+		entryNum = findValue(value);
+		system("cls");
+		gotoxy(10, 12);
+		printf("Запись с указанным значением номера зачётки: %d\n", entryNum);
+		gotoxy(10, 14);
+		printf("|  №|        Фамилия И.О.|           Факультет|    Группа| № зачётки|");
+		gotoxy(10, 15+entryNum);
+		showElement(entryNum);
+		_getch();		break;
 	case '9':
 		//searchByCondition();
 		break;
@@ -233,8 +247,8 @@ void showElement(int number)												// вывод выбранного эл�
 
 void showAll()
 {
-	int i;
-	for (i = 0; i<gi_arrSize; i++)
+	int i = 0;
+	for (; i<gi_arrSize; i++)
 	{
 		gotoxy(10, 15+i);
 		showElement(i);
@@ -287,8 +301,8 @@ void cleanElem(int number)
 
 int getCleanElem()
 {
-	int i;
-	for (i = 0; i<gi_arrSize; i++)
+	int i = 0;
+	for (; i<gi_arrSize; i++)
 	{
 		if (structArray->i_isFull == 0)
 		{
@@ -306,8 +320,8 @@ int growArray()																// вызывается при добавлени
 {
 	gi_arrSize += 1;                                                        // увеличиваем размер будущего массива. |
 	myType *tempPtr = (myType*)malloc((gi_arrSize)*sizeof(myType));			// динамическое выделение памяти        |
-	int i;                                                                  // под новый массив размера "size+1".   |
-	for (i = 0; i<gi_arrSize-1; i++)										// копирование всех					|
+	int i = 0;                                                                  // под новый массив размера "size+1".   |
+	for (; i<gi_arrSize-1; i++)										// копирование всех					|
 	{																		// элементов исходного массива		|
 		*tempPtr++ = *structArray++;										// в новый путём сдвига указателей.	|
 	}                                                                       //
@@ -325,8 +339,8 @@ void deleteElement(int number)
 		gcp_lastError = "Выход за пределы массива (deleteElement)";
 		return;
 	}
-	int i;
-	for (i = number; i<gi_arrSize-1; i++)
+	int i = number;
+	for (; i<gi_arrSize-1; i++)
 	{
 		structArray[i] = structArray[i+1];
 	}
@@ -382,12 +396,13 @@ int sortByRecBook(const void *arg1, const void *arg2)
 	return one-two;
 }
 
-int getMinRecord()
+int getMinValue()
 {
 	myType *tempPtr = structArray;
-	int min = INT_MAX;
-	int i, iMin;
-	for (i = 0; i<gi_arrSize; i++)
+	int min = INT_MAX,
+		i = 0,
+		iMin = tempPtr->i_recBook;
+	for (; i<gi_arrSize; i++)
 	{
 		if (tempPtr->i_recBook<min)
 		{
@@ -398,6 +413,33 @@ int getMinRecord()
 	}
 	gcp_lastError = "Ошибок не было (minField)";
 	return iMin;
+}
+
+int findValue(int value)													// поиск записи с ближайшим к value значением.
+{																			// 
+	int entryNum,															// номер структуры, с нужным значением поля.
+		delta,																// разница значений
+		min = INT_MAX,														// разница-минимум
+		i = 0;
+	for (; i<gi_arrSize; i++)
+	{
+		delta = abs(value-structArray->i_recBook);							// разница равна нулю,
+		if (delta==0)														// при совпадении значений, поэтому...
+		{																	// ...
+			structArray -= i;												// ...сбрасываем указатель массива в начало
+			gcp_lastError = "Ошибок не было (findValue)";
+			return i;														// и возвращаем эту позицию.
+		}
+		if (delta < min)													// если разница меньше минимума
+		{																	//
+			min = delta;													//
+			entryNum = i;													// запоминаем номер этого элемента
+		}
+		structArray++;
+	}
+	structArray -= i;
+	gcp_lastError = "Ошибок не было (findValue)";
+	return entryNum;
 }
 
 void gotoxy(int xpos, int ypos)
