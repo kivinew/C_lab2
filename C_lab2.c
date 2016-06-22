@@ -39,7 +39,13 @@ typedef struct student
 }myType;
 int	menu(),
 	getCleanElem(),
-	growArray();
+	growArray(),
+	sortByName(const void*, const void*),
+	sortByDept(const void*, const void*),
+	sortByGroup(const void*, const void*),
+	sortByRecBook(const void*, const void*),
+	getMinValue(),
+	findValue(int);
 void addElement(),
 	showElement(int),
 	deleteElement(int),
@@ -48,11 +54,6 @@ void addElement(),
 	gotoxy(int x, int y),
 	showAll(),
 	sortSelect();
-int sortByName(const void*, const void*),
-	sortByDept(const void*, const void*),
-	sortByGroup(const void*, const void*),
-	sortByRecBook(const void*, const void*),
-	getMinRecord();
 myType	*createArray();
 
 /*-------------------------------------------------------------------------------------------------------------------------*/
@@ -91,122 +92,6 @@ myType* createArray()                                                       // �
 	return tempPtr;															// возвращает указатель на массив структур
 }
 
-int menu()
-{
-	system("cls");
-	printf(	"Размер массива: %d\t"
-			"Сообщения об ошибках: %s\n", gi_arrSize, gcp_lastError);
-	printf(	"\t1 - добавить строку\n"
-			"\t2 - вывод строки\n"
-			"\t3 - изменение элемента\n"
-			"\t4 - удаление элемента со сдвигом\n"
-			"\t5 - очистка элемента\n"
-			"\t6 - вывод свободного элемента\n"
-			"\t7 - найти элемент с минимальным значением поля \"№ зачётки\"\n"
-			"\t8 - найти элемент со значением поля \"№ зачётки\", близким к указанному\n"
-			"\t9 - поиск элементов со значением поля \"№ зачётки\" равным указанному\n"
-			"\t0 - сортировка массива по возрастанию значения поля \"Группа\"\n"
-			"\tESC - выход\n");
-	gotoxy(10, 14);
-	printf("|  №|        Фамилия И.О.|           Факультет|    Группа| № зачётки|");
-	showAll();                                                              // вывод всех элементов
-	char choice;
-	choice = _getch();
-	int number, emptyNumber, minRec;												// номер элемента/"пустого" элемента
-	switch (choice)
-	{
-	case '1':
-		addElement();
-		break;
-	case '2':
-		printf("Номер элемента для вывода: ");
-		scanf_s("%d", &number);
-		if (number < 0||number >= gi_arrSize)
-		{
-			gcp_lastError = "Выход за пределы массива (show)";
-			break;
-		}
-		if ((structArray+number)->i_isFull = 0)
-		{
-			gcp_lastError = "Элемент пуст (show)";
-			break;
-		}
-		system("cls");
-		gotoxy(10, 12);
-		printf("Содержимое %d-го элемента маcсива: \n", number);
-		gotoxy(10, 14);
-		printf("|  №|        Фамилия И.О.|           Факультет|    Группа| № зачётки|");
-		gotoxy(10, 15+number);
-		showElement(number);
-		_getch();
-		break;
-	case '3':
-		printf("Номер элемента для изменения: ");
-		scanf_s("%d", &number);
-		editElement(number);
-		break;
-	case '4':
-		printf("Номер элемента для удаления: ");
-		scanf_s("%d", &number);
-		deleteElement(number);
-		break;
-	case '5':
-		printf("Номер элемента для очистки: ");
-		scanf_s("%d", &number);
-		cleanElem(number);
-		break;
-	case '6':
-		emptyNumber = getCleanElem();									// функция вернёт номер пустого
-		if (emptyNumber < 0)											// или -1, если такого нет
-		{
-			system("cls");
-			gotoxy(20, 10);
-			printf("Пустых элементов нет!");
-			_getch();
-			break;
-		}			
-		system("cls");
-		gotoxy(35, 12);
-		printf("Пустой элемент №: %d", emptyNumber);
-		gotoxy(10, 14);
-		printf("|  №|        Фамилия И.О.|           Факультет|    Группа| № зачётки|\n");
-		gotoxy(10, 15+emptyNumber);
-		showElement(emptyNumber);
-		_getch();
-		break;
-	case '7':
-		minRec = getMinRecord();
-		system("cls");
-		gotoxy(10, 12);
-		printf("Запись с минимальным значением номера зачётки: %d\n", minRec);
-		gotoxy(10, 14);
-		printf("|  №|        Фамилия И.О.|           Факультет|    Группа| № зачётки|");
-		gotoxy(10, 15+minRec);
-		showElement(minRec);
-		_getch();
-		break;
-	case '8':
-		//getRecIs();
-		break;
-	case '9':
-		//searchByCondition();
-		break;
-	case '0':	
-		gotoxy(0,22);
-		printf("\tВариант сортировки: \n"
-			   "\t1 - по фамилии"
-			   "\t2 - по факультету"
-			   "\t3 - по группе"
-			   "\t4 - по номеру зачётки");
-		sortSelect();
-		break;
-	case ESC:
-		return FALSE;
-		break;
-	}
-	return TRUE;
-}
-
 void addElement()                                                           // добавить элемент
 {                                                                           //
 	editElement(growArray());                                               // редактировать элемент, номер которого
@@ -233,8 +118,8 @@ void showElement(int number)												// вывод выбранного эл�
 
 void showAll()
 {
-	int i;
-	for (i = 0; i<gi_arrSize; i++)
+	int i = 0;
+	for (; i<gi_arrSize; i++)
 	{
 		gotoxy(10, 15+i);
 		showElement(i);
@@ -276,9 +161,9 @@ void cleanElem(int number)
 		gcp_lastError = "Элемент пуст (clean)";
 		return;
 	}
-	strcpy(tempPtr->cp_department, "");
-	strcpy(tempPtr->cp_name, "");
-	strcpy(tempPtr->cp_group, "");
+	strcpy(tempPtr->cp_department, " ");
+	strcpy(tempPtr->cp_name, " ");
+	strcpy(tempPtr->cp_group, " ");
 	tempPtr->i_recBook = 0;
 	tempPtr->i_isFull = 0;
 	gcp_lastError = "Ошибок не было (clean)";
@@ -287,8 +172,8 @@ void cleanElem(int number)
 
 int getCleanElem()
 {
-	int i;
-	for (i = 0; i<gi_arrSize; i++)
+	int i = 0;
+	for (; i<gi_arrSize; i++)
 	{
 		if (structArray->i_isFull == 0)
 		{
@@ -306,8 +191,8 @@ int growArray()																// вызывается при добавлени
 {
 	gi_arrSize += 1;                                                        // увеличиваем размер будущего массива. |
 	myType *tempPtr = (myType*)malloc((gi_arrSize)*sizeof(myType));			// динамическое выделение памяти        |
-	int i;                                                                  // под новый массив размера "size+1".   |
-	for (i = 0; i<gi_arrSize-1; i++)										// копирование всех					|
+	int i = 0;                                                                  // под новый массив размера "size+1".   |
+	for (; i<gi_arrSize-1; i++)										// копирование всех					|
 	{																		// элементов исходного массива		|
 		*tempPtr++ = *structArray++;										// в новый путём сдвига указателей.	|
 	}                                                                       //
@@ -325,8 +210,8 @@ void deleteElement(int number)
 		gcp_lastError = "Выход за пределы массива (deleteElement)";
 		return;
 	}
-	int i;
-	for (i = number; i<gi_arrSize-1; i++)
+	int i = number;
+	for (; i<gi_arrSize-1; i++)
 	{
 		structArray[i] = structArray[i+1];
 	}
@@ -382,12 +267,13 @@ int sortByRecBook(const void *arg1, const void *arg2)
 	return one-two;
 }
 
-int getMinRecord()
+int getMinValue()
 {
 	myType *tempPtr = structArray;
-	int min = INT_MAX;
-	int i, iMin;
-	for (i = 0; i<gi_arrSize; i++)
+	int min = INT_MAX,
+		i = 0,
+		iMin = tempPtr->i_recBook;
+	for (; i<gi_arrSize; i++)
 	{
 		if (tempPtr->i_recBook<min)
 		{
@@ -400,10 +286,163 @@ int getMinRecord()
 	return iMin;
 }
 
+int findValue(int value)													// поиск записи с ближайшим к value значением.
+{																			// 
+	int entryNum,															// номер структуры, с нужным значением поля.
+		delta,																// разница значений
+		min = INT_MAX,														// разница-минимум
+		i = 0;
+	for (; i<gi_arrSize; i++)
+	{
+		delta = abs(value-structArray->i_recBook);							// разница равна нулю,
+		if (delta==0)														// при совпадении значений, поэтому...
+		{																	// ...
+			structArray -= i;												// ...сбрасываем указатель массива в начало
+			gcp_lastError = "Ошибок не было (findValue)";
+			return i;														// и возвращаем эту позицию.
+		}
+		if (delta < min)													// если разница меньше минимума
+		{																	//
+			min = delta;													//
+			entryNum = i;													// запоминаем номер этого элемента
+		}
+		structArray++;
+	}
+	structArray -= i;
+	gcp_lastError = "Ошибок не было (findValue)";
+	return entryNum;
+}
+
 void gotoxy(int xpos, int ypos)
 {
 	COORD scrn;
 	HANDLE hOuput = GetStdHandle(STD_OUTPUT_HANDLE);
 	scrn.X = xpos; scrn.Y = ypos;
 	SetConsoleCursorPosition(hOuput, scrn);
+}
+
+int menu()
+{
+	system("cls");
+	printf("Размер массива: %d\t"
+		"Сообщения об ошибках: %s\n", gi_arrSize, gcp_lastError);
+	printf("\t1 - добавить строку\n"
+		"\t2 - вывод строки\n"
+		"\t3 - изменение элемента\n"
+		"\t4 - удаление элемента со сдвигом\n"
+		"\t5 - очистка элемента\n"
+		"\t6 - вывод свободного элемента\n"
+		"\t7 - найти элемент с минимальным значением поля \"№ зачётки\"\n"
+		"\t8 - найти элемент со значением поля \"№ зачётки\", близким к указанному\n"
+		"\t9 - ?\n"
+		"\t0 - сортировка массива по значениям полей\n"
+		"\tESC - выход\n");
+	gotoxy(10, 14);
+	printf("|  №|        Фамилия И.О.|           Факультет|    Группа| № зачётки|");
+	showAll();                                                              // вывод всех элементов
+	char choice;
+	choice = _getch();
+	int number,																// номер элемента/"пустого" элемента
+		value;																// значение поля
+	switch (choice)
+	{
+	case '1':
+		addElement();
+		break;
+	case '2':
+		printf("Номер элемента для вывода: ");
+		scanf_s("%d", &number);
+		if (number < 0||number>=gi_arrSize)
+		{
+			gcp_lastError = "Выход за пределы массива (show)";
+			break;
+		}
+		if ((structArray+number)->i_isFull = 0)
+		{
+			gcp_lastError = "Элемент пуст (show)";
+			break;
+		}
+		system("cls");
+		gotoxy(10, 12);
+		printf("Содержимое %d-го элемента маcсива: \n", number);
+		gotoxy(10, 14);
+		printf("|  №|        Фамилия И.О.|           Факультет|    Группа| № зачётки|");
+		gotoxy(10, 15+number);
+		showElement(number);
+		_getch();
+		break;
+	case '3':
+		printf("Номер элемента для изменения: ");
+		scanf_s("%d", &number);
+		editElement(number);
+		break;
+	case '4':
+		printf("Номер элемента для удаления: ");
+		scanf_s("%d", &number);
+		deleteElement(number);
+		break;
+	case '5':
+		printf("Номер элемента для очистки: ");
+		scanf_s("%d", &number);
+		cleanElem(number);
+		break;
+	case '6':
+		number = getCleanElem();											// функция вернёт номер пустого
+		if (number < 0)														// или -1, если такого нет
+		{
+			system("cls");
+			gotoxy(20, 10);
+			printf("Пустых элементов нет!");
+			_getch();
+			break;
+		}
+		system("cls");
+		gotoxy(35, 12);
+		printf("Пустой элемент №: %d", number);
+		gotoxy(10, 14);
+		printf("|  №|        Фамилия И.О.|           Факультет|    Группа| № зачётки|\n");
+		gotoxy(10, 15+number);
+		showElement(number);
+		_getch();
+		break;
+	case '7':
+		number = getMinValue();
+		system("cls");
+		gotoxy(10, 12);
+		printf("Запись с минимальным значением номера зачётки: %d\n", number);
+		gotoxy(10, 14);
+		printf("|  №|        Фамилия И.О.|           Факультет|    Группа| № зачётки|");
+		gotoxy(10, 15+number);
+		showElement(number);
+		_getch();
+		break;
+	case '8':
+		printf("Значение номера зачётки для поиска: ");
+		scanf("%d", &value);
+		number = findValue(value);
+		system("cls");
+		gotoxy(10, 12);
+		printf("Запись с указанным значением номера зачётки: %d\n", number);
+		gotoxy(10, 14);
+		printf("|  №|        Фамилия И.О.|           Факультет|    Группа| № зачётки|");
+		gotoxy(10, 15+number);
+		showElement(number);
+		_getch();		break;
+	case '9':
+		searchByCondition();												// поиск элементов с совпадающими значениями полей
+		break;
+	case '0':
+		gotoxy(0, 22);
+		printf("\tВариант сортировки: \n"
+			"\t1 - по фамилии"
+			"\t2 - по факультету"
+			"\t3 - по группе"
+			"\t4 - по номеру зачётки");
+		sortSelect();
+		break;
+	case ESC:
+		return FALSE;
+		break;
+	}
+	return TRUE;
 }
