@@ -6,23 +6,24 @@
 - «очистка» структурированных переменных;
 - поиск свободной структурированной переменной;
 - ввод элементов (полей) структуры с клавиатуры;
-- вывод элементов (полей) структуры с клавиатуры;
+- вывод элементов (полей) структуры;
 - поиск в массиве структуры с минимальным значением заданного поля;
 - сортировка массива структур в порядке возрастания заданного поля (при сортировке можно
 использовать тот факт, что в Си++ разрешается присваивание структурированных переменных);
 - поиск в массиве структур элемента с заданным значением поля или с наиболее близким к
-нему по значению.
+нему по значению;
 - удаление заданного элемента;
 - изменение (редактирование) заданного элемента.
 - вычисление с проверкой и использованием всех элементов массива по заданному условию и
 формуле (например, общая сумма на всех счетах) -  дается индивидуально.
+✈✈Вариант 5. Фамилия И.О., номер зачетной книжки, факультет, группа.✈✈
 	Префиксы переменных:				i, c - тип int, char	g - глобальные	р - указатель */
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdlib.h>
 #include <stdio.h>
 #include <conio.h>
 #include <Windows.h>
-#include <locale.h>
+//#include <locale.h>
 
 #define TRUE 1
 #define FALSE 0
@@ -36,7 +37,6 @@ typedef struct student
 	int		i_recBook,
 			i_isFull;														// флаг: 0 - пустой, 1 - содержит данные
 }myType;
-
 int	menu(),
 	getCleanElem(),
 	growArray();
@@ -45,14 +45,16 @@ void addElement(),
 	deleteElement(int),
 	editElement(int),
 	cleanElem(int),
-	gotoxy(int, int),
+	gotoxy(int x, int y),
 	showAll(),
 	sortSelect();
 int sortByName(const void*, const void*),
 	sortByDept(const void*, const void*),
 	sortByGroup(const void*, const void*),
-	sortByRecBook(const void*, const void*);
-myType* createArray();
+	sortByRecBook(const void*, const void*),
+	getMinRecord();
+myType	*createArray();
+
 /*-------------------------------------------------------------------------------------------------------------------------*/
 char *gcp_lastError = NULL;													// строка сообщений об ошибках
 myType *structArray;														// глобальный массив структур
@@ -100,9 +102,9 @@ int menu()
 			"\t4 - удаление элемента со сдвигом\n"
 			"\t5 - очистка элемента\n"
 			"\t6 - вывод свободного элемента\n"
-			"\t7 - найти элемент с минимальным значением поля \"Группа\"\n"
-			"\t8 - найти элемент со значением поля \"Группа\", близким к указанному\n"
-			"\t9 - поиск элементов со значением поля \"Группа\" равным указанному\n"
+			"\t7 - найти элемент с минимальным значением поля \"№ зачётки\"\n"
+			"\t8 - найти элемент со значением поля \"№ зачётки\", близким к указанному\n"
+			"\t9 - поиск элементов со значением поля \"№ зачётки\" равным указанному\n"
 			"\t0 - сортировка массива по возрастанию значения поля \"Группа\"\n"
 			"\tESC - выход\n");
 	gotoxy(10, 14);
@@ -110,7 +112,7 @@ int menu()
 	showAll();                                                              // вывод всех элементов
 	char choice;
 	choice = _getch();
-	int number, emptyNumber;												// номер элемента/"пустого" элемента
+	int number, emptyNumber, minRec;												// номер элемента/"пустого" элемента
 	switch (choice)
 	{
 	case '1':
@@ -173,10 +175,18 @@ int menu()
 		_getch();
 		break;
 	case '7':
-		//getMinField();
+		minRec = getMinRecord();
+		system("cls");
+		gotoxy(10, 12);
+		printf("Запись с минимальным значением номера зачётки: %d\n", minRec);
+		gotoxy(10, 14);
+		printf("|  №|        Фамилия И.О.|           Факультет|    Группа| № зачётки|");
+		gotoxy(10, 15+minRec);
+		showElement(minRec);
+		_getch();
 		break;
 	case '8':
-		//getFieldIs();
+		//getRecIs();
 		break;
 	case '9':
 		//searchByCondition();
@@ -370,6 +380,24 @@ int sortByRecBook(const void *arg1, const void *arg2)
 	int one = ((myType*)arg1)->i_recBook;
 	int two = ((myType*)arg2)->i_recBook;
 	return one-two;
+}
+
+int getMinRecord()
+{
+	myType *tempPtr = structArray;
+	int min = INT_MAX;
+	int i, iMin;
+	for (i = 0; i<gi_arrSize; i++)
+	{
+		if (tempPtr->i_recBook<min)
+		{
+			min = tempPtr->i_recBook;
+			iMin = i;
+		}
+		tempPtr++;
+	}
+	gcp_lastError = "Ошибок не было (minField)";
+	return iMin;
 }
 
 void gotoxy(int xpos, int ypos)
