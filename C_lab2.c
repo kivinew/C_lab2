@@ -40,7 +40,7 @@ typedef struct student
 }myType;
 struct groupSize
 {
-	char *group;
+	char group[10];
 	int countStudents;
 };
 int	menu(),
@@ -167,9 +167,9 @@ void cleanElem(int number)
 		gcp_lastError = (char*)"Элемент пуст (clean)";
 		return;
 	}
-	strcpy(tempPtr->cp_department, " ");
-	strcpy(tempPtr->cp_name, " ");
-	strcpy(tempPtr->cp_group, " ");
+	strcpy(tempPtr->cp_department, "");
+	strcpy(tempPtr->cp_name, "");
+	strcpy(tempPtr->cp_group, "");
 	tempPtr->i_recBook = 0;
 	tempPtr->i_isFull = 0;
 	gcp_lastError = (char*)"Ошибок не было (clean)";
@@ -321,38 +321,45 @@ int findValue(int value)													// поиск записи с ближай�
 
 struct groupSize *findLargestGroup()
 {
-	struct groupSize *temp = (char*)malloc(gi_arrSize*sizeof(char));			// временный массив численности групп
-	int i = 0,
-		j = 0,
+	static struct groupSize result;												// указатель для return
+	struct groupSize *temp = 
+		(struct groupSize *)malloc(gi_arrSize*sizeof(struct groupSize));		// динамическая память для массива численности групп
+	temp->countStudents = 0;
+	strcpy(temp->group, "");
+	int i,
+		j,
 		maxIndex,
-		maxItems = INT_MIN;
-	for (; i < gi_arrSize; i++)													// 1. Заполнение массива численности групп.
+		maximum = INT_MIN;
+	for (i = 0; i < gi_arrSize; i++)											// 1. Заполнение массива численности групп.
 	{																			//
-		temp->group = (structArray + i)->cp_group;								// образец строки для сравнения
-		for (; j < gi_arrSize; j++)												// проходом по массиву структур, находим
+		strcpy(temp->group, (structArray + i)->cp_group);						// образец строки для сравнения
+		temp->countStudents = 0;
+		for (j = 0; j < gi_arrSize; j++)										// проходом по массиву структур, находим
 		{																		// совпадение значения группы с образцом...
-			if (temp->group == structArray->cp_group)							//
+			if (!strcmp(temp->group, structArray->cp_group))					//
 			{																	//
 				temp->countStudents++;											// ...и увеличиваем численность данной группы.
 			}																	//
 			structArray++;														//
 		}																		//
-		temp++;																	//
 		structArray -= j;														// сброс указателя в начало массива.
+		temp++;																	//
 	}
+	temp -= i;																	// сброс указателя в начало массива.
 	for (i = 0; i < gi_arrSize; i++)											// 2. Поиск наибольшего значения в массиве численности.
 	{																			//
-		if (temp->countStudents > maxItems)										//
+		if (temp->countStudents > maximum)										//
 		{																		//
-			maxItems = temp->countStudents;										//
+			maximum = temp->countStudents;										//
 			maxIndex = i;														// отмечаем индекс максимального элемента массива
 		}																		// для вывода результата.
 		temp++;																	//
 	}																			//
-	temp -= i;
+	temp -= i;																	// сброс указателя в начало массива.
+	result = *(temp + maxIndex);
 	free(temp);
 	gcp_lastError = (char*)"Ошибок не было (findLargestGroup)";
-	return temp + maxIndex;														// возвращаем указатель на структуру 
+	return &result;																// возвращаем указатель на структуру 
 }																				// с максимальной численностью.
 
 void gotoxy(int xpos, int ypos)
