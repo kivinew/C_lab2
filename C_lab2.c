@@ -29,7 +29,7 @@
 #define TRUE 1
 #define FALSE 0
 #define ESC 27
-#define INT_MAX 2147000000
+//#define INT_MAX 2147000000
 typedef struct student
 {
 	char	cp_name[20],													// 3 строки для записи фамилии,
@@ -38,6 +38,11 @@ typedef struct student
 	int		i_recBook,														// номер зачётки.
 			i_isFull;														// флаг: 0 - пустой, 1 - содержит данные
 }myType;
+struct groupSize
+{
+	char *group;
+	int countStudents;
+};
 int	menu(),
 	getCleanElem(),
 	growArray(),
@@ -54,8 +59,8 @@ void addElement(),
 	cleanElem(int),
 	gotoxy(int x, int y),
 	showAll(),
-	sortSelect(),
-	findLargestGroup();
+	sortSelect();
+struct groupSize *findLargestGroup();
 myType	*createArray();
 /*-------------------------------------------------------------------------------------------------------------------------*/
 char *gcp_lastError = NULL;													// строка сообщений об ошибках
@@ -314,42 +319,41 @@ int findValue(int value)													// поиск записи с ближай�
 	return entryNum;
 }
 
-void findLargestGroup()
+struct groupSize *findLargestGroup()
 {
-	struct groupSize
-	{
-		char *group;
-		int countStudents;
-	};
 	struct groupSize *temp = (char*)malloc(gi_arrSize*sizeof(char));			// временный массив численности групп
 	int i = 0,
 		j = 0,
+		maxIndex,
 		maxItems = INT_MIN;
-	for (; i < gi_arrSize; i++)													// 1. Заполнение массива численности групп
+	for (; i < gi_arrSize; i++)													// 1. Заполнение массива численности групп.
 	{																			//
 		temp->group = (structArray + i)->cp_group;								// образец строки для сравнения
 		for (; j < gi_arrSize; j++)												// проходом по массиву структур, находим
-		{																		// совпадение значения группы с образцом
+		{																		// совпадение значения группы с образцом...
 			if (temp->group == structArray->cp_group)							//
 			{																	//
-				temp->countStudents++;											// и увеличиваем численность данной группы
+				temp->countStudents++;											// ...и увеличиваем численность данной группы.
 			}																	//
 			structArray++;														//
 		}																		//
 		temp++;																	//
-		structArray -= j;														// сброс указателя в начало массива
+		structArray -= j;														// сброс указателя в начало массива.
 	}
-	for (i = 0; i < gi_arrSize; i++)											// 2. Поиск наибольшего значения в массиве численности
+	for (i = 0; i < gi_arrSize; i++)											// 2. Поиск наибольшего значения в массиве численности.
 	{																			//
 		if (temp->countStudents > maxItems)										//
 		{																		//
 			maxItems = temp->countStudents;										//
-		}																		//
+			maxIndex = i;														// отмечаем индекс максимального элемента массива
+		}																		// для вывода результата.
 		temp++;																	//
 	}																			//
-	gcp_lastError = (char*)"Ошибок не было (findValue)";
-	return;
-}
+	temp -= i;
+	free(temp);
+	gcp_lastError = (char*)"Ошибок не было (findLargestGroup)";
+	return temp + maxIndex;														// возвращаем указатель на структуру 
+}																				// с максимальной численностью.
 
 void gotoxy(int xpos, int ypos)
 {
@@ -377,11 +381,12 @@ int menu()
 		"\tESC - выход\n");
 	gotoxy(10, 14);
 	printf("|  №|        Фамилия И.О.|           Факультет|    Группа| № зачётки|");
-	showAll();                                                              // вывод всех элементов
-	char choice;
+	showAll();                                                              // вывод всех элементов.
+	char choice;															// переменная выбора пункта меню.
+	struct groupSize *searchResult = NULL;									// указатель на структуру с численностью группы.
+	int number,																// номер элемента массива.
+		value;																// значение поля структуры.
 	choice = _getch();
-	int number,																// номер элемента/"пустого" элемента
-		value;																// значение поля
 	switch (choice)
 	{
 	case '1':
@@ -467,7 +472,11 @@ int menu()
 		showElement(number);
 		_getch();		break;
 	case '9':
-		//searchByCondition();												// поиск элементов с совпадающими значениями полей
+		searchResult = findLargestGroup();									// поиск элементов с совпадающими значениями полей
+		system("cls");
+		gotoxy(20, 10);
+		printf("Максимальная численность %d человек обнаружена в группе %s", searchResult->countStudents, searchResult->group);
+		_getch();
 		break;
 	case '0':
 		gotoxy(0, 22);
