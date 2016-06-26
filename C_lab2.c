@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <conio.h>
 #include <Windows.h>
-	//#include <locale.h>
+//#include <locale.h>
 
 #define TRUE 1
 #define FALSE 0
